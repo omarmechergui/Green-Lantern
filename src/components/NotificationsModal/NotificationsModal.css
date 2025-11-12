@@ -1,0 +1,81 @@
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 80px;
+  z-index: 9999; /* أهم حاجة باش تكون فوق كل شيء */
+}
+
+/* Modal Content */
+.modal-content {
+  width: 360px;
+  max-height: 500px;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(25px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(0,255,136,0.5);
+  box-shadow: 0 0 30px rgba(0,255,136,0.6); /* glow effect */
+  overflow-y: auto;
+  animation: modal-fade 0.25s ease;
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0,255,136,0.3);
+}
+
+.modal-header h3 {
+  color: #4ade80;
+  text-shadow: 0 0 10px #00ff88; /* glow فوق كل شيء */
+}
+
+.close-btn {
+  color: #fff;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  text-shadow: 0 0 10px #00ff88; /* glow فوق كل شيء */
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Empty state */
+.no-notifications {
+  color: #BCE4C7;
+  text-align: center;
+  text-shadow: 0 0 6px #00ff88;
+  font-weight: 500;
+}
+
+/* Scrollbar */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #4ade80;
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+}

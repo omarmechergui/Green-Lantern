@@ -1,0 +1,18 @@
+.collection-map {
+  width: 100%;
+  height: 500px;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  margin-top: 20px;
+}
+
+/* Optional: hover popup animation */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  background: rgba(30, 41, 59, 0.95);
+  color: #f8fafc;
+}
+.leaflet-popup-content a {
+  color: #22c55e;
+  text-decoration: underline;
+}

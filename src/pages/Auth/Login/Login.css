@@ -1,0 +1,222 @@
+/* Container */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(to bottom right, #021B11, #043F2E, #0A5C4A);
+}
+
+.login-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.scene {
+  perspective: 1200px;
+}
+
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(.2,.9,.2,1);
+  width: 320px;
+  height: 320px;
+  border-radius: 30px;
+}
+
+.card-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 2rem;
+  background: linear-gradient(to bottom right, rgba(125,211,125,0.2), transparent);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card-content {
+  position: absolute;
+  inset: 20px;
+  border-radius: 1.5rem;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.card-icon {
+  width: 95%;
+  height: 95%;
+  border-radius: 25px;
+  animation: floaty 4s ease-in-out infinite;
+}
+.card-3d:hover {
+  transform: scale(1.03);
+  box-shadow: 0 20px 60px rgba(0,255,100,0.35);
+}
+
+.card-icon:hover {
+  transform: scale(1.03);
+  box-shadow: 0 20px 60px rgba(0,255,100,0.35);
+}
+
+@keyframes floaty {
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-10px);}
+}
+
+.login-card {
+  position: relative;
+  max-width: 400px;
+  margin: auto;
+  padding: 2.5rem;
+  border-radius: 2rem;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 12px 50px rgba(0,0,0,0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 20px 60px rgba(0,255,100,0.35);
+}
+
+.login-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.login-subtitle {
+  color: #BCE4C7;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.login-inputname{
+  color: #ccdad0;
+  margin: 1rem;
+  display: flex;
+  gap: 5px;
+  
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: #4ade80;
+  background: rgba(255,255,255,0.2);
+  box-shadow: 0 0 8px #4ade80;
+}
+
+.input-error {
+  border-color: #f87171;
+}
+
+.error-msg {
+  font-size: 0.75rem;
+  color: #fca5a5;
+  margin-top: 0.25rem;
+}
+
+.show-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #7DD37D;
+  cursor: pointer;
+}
+
+.forgot-link {
+  color: #ccd9ea;
+  font-size: 18px;
+}
+.forgot-link:hover{
+  color: #0000ff;
+}
+
+.form-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #BCE4C7;
+  margin-bottom: 1.5rem;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(to right, #4ade80, #22c55e);
+  border: none;
+  border-radius: 1rem;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 20px rgba(16,185,129,0.35);
+}
+
+.spinner {
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top: 2px solid #4ade80;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+
+.signup-text {
+  text-align: center;
+  margin-top: 1rem;
+  color: #BCE4C7;
+}
+
+.signup-text a {
+  color: #fff;
+  font-weight: 600;
+}
+
+.copyright {
+  text-align: center;
+  font-size: 0.7rem;
+  margin-top: 0.5rem;
+  color: #A7F3D0;
+}
+
+/* Responsive */
+@media(max-width:768px){
+  .login-grid {
+    grid-template-columns: 1fr;
+  }
+  .scene { margin: auto; }
+}
