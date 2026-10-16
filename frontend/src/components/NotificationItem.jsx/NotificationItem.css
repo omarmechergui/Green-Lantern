@@ -1,0 +1,61 @@
+.notification-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(0,255,136,0.2);
+  border-radius: 1.5rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.5s ease;
+  cursor: pointer;
+}
+
+.notification-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification-item:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0,255,136,0.25);
+}
+
+.notification-icon {
+  font-size: 1.5rem;
+  color: #00ff88;
+  text-shadow: 0 0 5px #00ff88;
+}
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-message {
+  color: #fff;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.notification-time {
+  color: #BCE4C7;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Optional: Different styles for type */
+.notification-item.success {
+  border-color: #4ade80;
+}
+
+.notification-item.error {
+  border-color: #f87171;
+}
+
+.notification-item.info {
+  border-color: #22c55e;
+}

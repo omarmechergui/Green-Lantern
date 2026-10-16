@@ -1,0 +1,127 @@
+.badge-card-animated {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-card-animated:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+.badge-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+/* Theme variations */
+.theme-recycle .badge-icon-box {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+.theme-recycle .progress-fill {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+.theme-recycle .badge-percent {
+  color: #059669;
+  background-color: #ecfdf5;
+}
+
+.theme-user .badge-icon-box {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+.theme-user .progress-fill {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+.theme-user .badge-percent {
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.theme-leaf .badge-icon-box {
+  background-color: #fefce8;
+  color: #ca8a04;
+}
+.theme-leaf .progress-fill {
+  background: linear-gradient(90deg, #eab308, #ca8a04);
+}
+.theme-leaf .badge-percent {
+  color: #a16207;
+  background-color: #fefce8;
+}
+
+.badge-percent {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.badge-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.badge-title {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.badge-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.badge-value {
+  font-size: 1.65rem;
+  color: #0f172a;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.badge-target {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 7px;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 0.3rem;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}

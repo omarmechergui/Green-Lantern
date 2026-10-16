@@ -1,0 +1,107 @@
+.notifications-panel {
+  position: fixed;
+  top: 70px; /* تحت TopBar */
+  right: -360px; /* مخفي افتراضياً */
+  width: 350px;
+  max-height: 500px;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(0,255,136,0.3);
+  box-shadow: 0 15px 40px rgba(0,255,136,0.25);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.4s ease, transform 0.3s ease;
+  z-index: 999;
+}
+
+.notifications-panel.open {
+  right: 20px;
+  transform: translateX(0);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.panel-header h3 {
+  color: #00ff88;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 0 5px #00ff88;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #00ff88;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.close-btn:hover {
+  transform: scale(1.2);
+  color: #4ade80;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+
+/* Scrollbar */
+.panel-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-body::-webkit-scrollbar-thumb {
+  background: rgba(0,255,136,0.5);
+  border-radius: 3px;
+}
+
+/* Notification Item Style */
+.notification-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,255,136,0.2);
+  box-shadow: 0 4px 15px rgba(0,255,136,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notification-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 10px 25px rgba(0,255,136,0.35);
+}
+
+.notification-message {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.notification-timestamp {
+  color: #BCE4C7;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  align-self: flex-end;
+}
+
+/* No notifications */
+.no-notifications {
+  text-align: center;
+  color: #BCE4C7;
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
