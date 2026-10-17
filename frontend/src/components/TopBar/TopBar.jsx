@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
+
 import { FaBell, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // لازم تستخدم react-router
+import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/pic/logo.jpg";
 import "./TopBar.css";
 
 export default function TopBar() {
-  const [coins, setCoins] = useState(125);
+  const { user } = useAuth();
+  const coins = user?.ecoBalance ?? 0;
   const navigate = useNavigate();
+
 
   return (
     <div className="topbar">

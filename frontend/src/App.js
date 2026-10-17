@@ -6,44 +6,68 @@ import {
   Navigate,
 } from "react-router-dom";
 
+// Auth & Route Guards
+import { useAuth } from "./context/AuthContext";
+import { ProtectedRoute, PublicRoute } from "./components/RouteGuards";
+
 // Pages
 import Login from "./pages/Auth/Login/Login";
 import Register from "./pages/Auth/Register/Register";
 import Dashboard from "./pages/User/Dashboard/Dashboard";
 import DeclareWaste from "./pages/User/DeclareWaste/DeclareWaste";
 import Notifications from "./pages/Notifications/Notifications";
-// Layout
-import DashboardLayout from "./layouts/DashboardLayout";
 import Rewards from "./pages/User/Rewards/Rewards";
 import WasteHistory from "./pages/User/WasteHistory/WasteHistory";
 import EcoBadgesPage from "./pages/User/EcoBadgesPage/EcoBadgesPage";
 import Profile from "./pages/User/Profile/Profile";
 import RecycleForm from "./pages/User/RecycleForm/RecycleForm";
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(true); // جربها true مبدئياً
+// Layout
+import DashboardLayout from "./layouts/DashboardLayout";
 
+function RootRedirect() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
+
+function App() {
   return (
     <Router>
       <Routes>
-        {/* Default Redirect */}
+        {/* Root Redirect based on real auth state */}
+        <Route path="/" element={<RootRedirect />} />
+
+        {/* Public Auth Pages (Redirect to dashboard if already logged in) */}
         <Route
-          path="/"
+          path="/login"
           element={
-            isAuthenticated ? (
-              <Navigate to="/dashboard" />
-            ) : (
-              <Navigate to="/login" />
-            )
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
           }
         />
 
-        {/* Auth Pages */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/* Dashboard Layout Pages */}
-        <Route element={<DashboardLayout />}>
+        {/* Protected Dashboard Routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/declare" element={<DeclareWaste />} />
           <Route path="/notifications" element={<Notifications />} />
@@ -51,10 +75,11 @@ function App() {
           <Route path="/history" element={<WasteHistory />} />
           <Route path="/eco-badges" element={<EcoBadgesPage />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/recycle" element={<RecycleForm  />} />
-
-
+          <Route path="/recycle" element={<RecycleForm />} />
         </Route>
+
+        {/* Fallback for unknown routes */}
+        <Route path="*" element={<RootRedirect />} />
       </Routes>
     </Router>
   );

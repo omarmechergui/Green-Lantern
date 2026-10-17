@@ -1,4 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 import "./Login.css";
 import logo from "../../../assets/pic/logo.jpg";
 
@@ -7,30 +9,52 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const sceneRef = useRef(null);
   const cardRef = useRef(null);
   const formRef = useRef(null);
 
+  // Determine redirect target after login
+  const from = location.state?.from?.pathname || "/dashboard";
+
   function validate() {
     const e = {};
-    if (!email) e.email = "Email is required";
-    else if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "Invalid email";
-    if (!password) e.password = "Password is required";
-    else if (password.length < 6) e.password = "At least 6 characters";
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      e.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      e.email = "Please enter a valid email address";
+    }
+
+    if (!password) {
+      e.password = "Password is required";
+    }
     return e;
   }
 
   async function handleSubmit(ev) {
     ev.preventDefault();
+    setServerError("");
+
     const v = validate();
     setErrors(v);
-    if (Object.keys(v).length) return;
+    if (Object.keys(v).length > 0) return;
+
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
-    alert("Logged in (demo). Replace with real backend call.");
+    try {
+      await login(email.trim().toLowerCase(), password);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setServerError(err.message || "Failed to log in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -78,15 +102,37 @@ export default function Login() {
               Log in to continue managing your Green Waste account
             </p>
 
+            {serverError && (
+              <div
+                className="server-error-banner"
+                style={{
+                  background: "rgba(239, 68, 68, 0.15)",
+                  border: "1px solid rgba(239, 68, 68, 0.4)",
+                  color: "#fca5a5",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  marginBottom: "16px",
+                  fontSize: "14px",
+                  lineHeight: "1.4",
+                }}
+              >
+                {serverError}
+              </div>
+            )}
+
             <form className="login-form" onSubmit={handleSubmit} noValidate>
               <div className="form-group">
                 <label className="login-inputname">Email</label>
                 <input
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
+                  }}
                   type="email"
                   placeholder="you@example.com"
                   className={`input-field ${errors.email ? "input-error" : ""}`}
+                  disabled={loading}
                 />
                 {errors.email && (
                   <div className="error-msg">{errors.email}</div>
@@ -98,19 +144,23 @@ export default function Login() {
                 <div className="relative">
                   <input
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: "" }));
+                    }}
                     type={showPwd ? "text" : "password"}
                     placeholder="••••••••"
                     className={`input-field ${
                       errors.password ? "input-error" : ""
                     }`}
+                    disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPwd((s) => !s)}
                     className="show-btn"
                   >
-                    {showPwd ? "" : ""}
+                    {showPwd ? "Hide" : "Show"}
                   </button>
                 </div>
                 {errors.password && (
@@ -123,9 +173,9 @@ export default function Login() {
                   <input type="checkbox" />
                   Remember me
                 </label>
-                <a href="#" className="forgot-link">
+                <span className="forgot-link" style={{ cursor: "pointer" }}>
                   Forgot password?
-                </a>
+                </span>
               </div>
 
               <button type="submit" disabled={loading} className="login-btn">
@@ -134,7 +184,7 @@ export default function Login() {
             </form>
 
             <div className="signup-text">
-              Don’t have an account? <a href="#">Sign up</a>
+              Don’t have an account? <Link to="/register">Sign up</Link>
             </div>
             <div className="copyright">© 2025 Green Lantern</div>
           </div>

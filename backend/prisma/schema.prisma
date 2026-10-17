@@ -1,0 +1,294 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum UserRole {
+  CITIZEN
+  PARTNER
+  COLLECTOR
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum DeliveryMethod {
+  DROP_OFF
+  PICKUP
+}
+
+enum DeclarationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  IN_TRANSIT
+  DELIVERED
+  VERIFIED
+  REJECTED
+  CANCELLED
+}
+
+enum TransactionType {
+  EARNED
+  SPENT
+  REFUNDED
+  ADJUSTMENT
+}
+
+enum RedemptionStatus {
+  REQUESTED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum NotificationType {
+  DECLARATION_STATUS
+  DELIVERY_UPDATE
+  POINTS_AWARDED
+  REWARD_UPDATE
+  SYSTEM
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model User {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  email         String        @unique
+  fullName      String
+  passwordHash  String
+  phone         String?
+  avatar        String?
+  role          UserRole      @default(CITIZEN)
+  status        AccountStatus @default(ACTIVE)
+  ecoBalance    Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  declarationsSubmitted WasteDeclaration[] @relation("CitizenDeclarations")
+  declarationsReviewed  WasteDeclaration[] @relation("ReviewedDeclarations")
+  centersManaged        RecyclingCenter[]  @relation("PartnerCenters")
+  deliveriesAssigned    WasteDelivery[]    @relation("CollectorDeliveries")
+  deliveriesVerified    WasteDelivery[]    @relation("VerifiedDeliveries")
+  transactions          EcoTransaction[]   @relation("UserTransactions")
+  redemptions           RewardRedemption[] @relation("UserRedemptions")
+  notifications         Notification[]     @relation("UserNotifications")
+
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model WasteCategory {
+  id                    String                 @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String                 @unique
+  description           String?
+  pointsPerKg           Int                    @default(10)
+  icon                  String?
+  isActive              Boolean                @default(true)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  // Relations
+  declarations          WasteDeclaration[]     @relation("CategoryDeclarations")
+  centerWasteCategories CenterWasteCategory[]  @relation("CategoryCenters")
+
+  @@index([isActive])
+}
+
+model RecyclingCenter {
+  id                  String                @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  address             String
+  city                String
+  governorate         String
+  latitude            Float?
+  longitude           Float?
+  phone               String?
+  email               String?
+  isActive            Boolean               @default(true)
+  partnerId           String?               @db.ObjectId
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  // Relations
+  partner             User?                 @relation("PartnerCenters", fields: [partnerId], references: [id])
+  acceptedCategories  CenterWasteCategory[] @relation("CenterCategories")
+  deliveries          WasteDelivery[]       @relation("CenterDeliveries")
+
+  @@index([governorate, city])
+  @@index([partnerId])
+  @@index([isActive])
+}
+
+model CenterWasteCategory {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  centerId          String          @db.ObjectId
+  wasteCategoryId   String          @db.ObjectId
+  createdAt         DateTime        @default(now())
+
+  // Relations
+  center            RecyclingCenter @relation("CenterCategories", fields: [centerId], references: [id])
+  wasteCategory     WasteCategory   @relation("CategoryCenters", fields: [wasteCategoryId], references: [id])
+
+  @@unique([centerId, wasteCategoryId])
+  @@index([wasteCategoryId])
+}
+
+model WasteDeclaration {
+  id                  String            @id @default(auto()) @map("_id") @db.ObjectId
+  citizenId           String            @db.ObjectId
+  wasteCategoryId     String            @db.ObjectId
+  deliveryMethod      DeliveryMethod
+  estimatedWeight     Float
+  description         String?
+  imageUrls           String[]
+  pickupAddress       String?
+  pickupLatitude      Float?
+  pickupLongitude     Float?
+  preferredPickupTime DateTime?
+  status              DeclarationStatus @default(PENDING)
+  reviewedById        String?           @db.ObjectId
+  rejectionReason     String?
+  reviewedAt          DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  // Relations
+  citizen             User              @relation("CitizenDeclarations", fields: [citizenId], references: [id])
+  wasteCategory       WasteCategory     @relation("CategoryDeclarations", fields: [wasteCategoryId], references: [id])
+  reviewedBy          User?             @relation("ReviewedDeclarations", fields: [reviewedById], references: [id])
+  delivery            WasteDelivery?    @relation("DeclarationDelivery")
+
+  @@index([citizenId])
+  @@index([wasteCategoryId])
+  @@index([status])
+  @@index([deliveryMethod])
+  @@index([createdAt])
+}
+
+model WasteDelivery {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  declarationId     String           @unique @db.ObjectId
+  centerId          String?          @db.ObjectId
+  collectorId       String?          @db.ObjectId
+  status            DeliveryStatus   @default(PENDING)
+  acceptedWeight    Float?
+  verifiedById      String?          @db.ObjectId
+  notes             String?
+  assignedAt        DateTime?
+  collectedAt       DateTime?
+  verifiedAt        DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relations
+  declaration       WasteDeclaration @relation("DeclarationDelivery", fields: [declarationId], references: [id])
+  center            RecyclingCenter? @relation("CenterDeliveries", fields: [centerId], references: [id])
+  collector         User?            @relation("CollectorDeliveries", fields: [collectorId], references: [id])
+  verifiedBy        User?            @relation("VerifiedDeliveries", fields: [verifiedById], references: [id])
+  transactions      EcoTransaction[] @relation("DeliveryTransactions")
+
+  @@index([centerId])
+  @@index([collectorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model EcoTransaction {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String            @db.ObjectId
+  type              TransactionType
+  amount            Int
+  description       String
+  deliveryId        String?           @db.ObjectId
+  redemptionId      String?           @db.ObjectId
+  createdAt         DateTime          @default(now())
+
+  // Relations
+  user              User              @relation("UserTransactions", fields: [userId], references: [id])
+  delivery          WasteDelivery?    @relation("DeliveryTransactions", fields: [deliveryId], references: [id])
+  redemption        RewardRedemption? @relation("RedemptionTransactions", fields: [redemptionId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([deliveryId])
+  @@index([redemptionId])
+  @@index([createdAt])
+}
+
+model Reward {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  title             String
+  description       String?
+  imageUrl          String?
+  pointsCost        Int
+  stock             Int                @default(0)
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  // Relations
+  redemptions       RewardRedemption[] @relation("RewardRedemptions")
+
+  @@index([isActive])
+  @@index([pointsCost])
+}
+
+model RewardRedemption {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String           @db.ObjectId
+  rewardId          String           @db.ObjectId
+  pointsSpent       Int
+  status            RedemptionStatus @default(REQUESTED)
+  notes             String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relations
+  user              User             @relation("UserRedemptions", fields: [userId], references: [id])
+  reward            Reward           @relation("RewardRedemptions", fields: [rewardId], references: [id])
+  transactions      EcoTransaction[] @relation("RedemptionTransactions")
+
+  @@index([userId])
+  @@index([rewardId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Notification {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String           @db.ObjectId
+  type              NotificationType
+  title             String
+  message           String
+  readAt            DateTime?
+  createdAt         DateTime         @default(now())
+
+  // Relations
+  user              User             @relation("UserNotifications", fields: [userId], references: [id])
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+}

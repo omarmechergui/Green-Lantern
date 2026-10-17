@@ -4,10 +4,21 @@ import { FaHome, FaRecycle, FaGift, FaUser, FaSignOutAlt, FaBars, FaHistory } fr
 import "./Sidebar.css";
 import logo from "../../assets/pic/logo.jpg";
 
+import { useAuth } from "../../context/AuthContext";
+
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
+  const { logout } = useAuth();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   return (
     <div className={`sidebar ${isOpen ? "open" : "closed"}`}>
@@ -48,7 +59,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-logout">
-        <button className="logout-btn">
+        <button className="logout-btn" onClick={handleLogout}>
           <FaSignOutAlt /> <span className="link-text">Logout</span>
         </button>
       </div>
