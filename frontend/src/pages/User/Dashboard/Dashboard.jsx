@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import KPICard from "../../../components/KPICard/KPICard";
 import BadgeCardProgress from "../../../components/BadgeCard/BadgeCardProgress";
 import RewardCard from "../../../components/RewardCard/RewardCard";
 import LeaderboardCard from "../../../components/LeaderboardCard/LeaderboardCard";
 import CollectionMap from "../CollectionMap/CollectionMap";
+import { useAuth } from "../../../context/AuthContext";
+import { ecoService } from "../../../services/eco.service";
+import { fetchCollectionCenters } from "../../../services/waste.service";
 import {
   FaLeaf,
   FaRecycle,
@@ -15,7 +18,8 @@ import {
   FaTrophy,
   FaGift,
   FaCalendarAlt,
-  FaInfoCircle,
+  FaCheckCircle,
+  FaClock,
 } from "react-icons/fa";
 import {
   AreaChart,
@@ -32,105 +36,130 @@ import {
 import "./Dashboard.css";
 
 export default function Dashboard() {
-  const [userPoints] = useState(450);
+  const { user } = useAuth();
+  const [statsData, setStatsData] = useState(null);
+  const [rewardsList, setRewardsList] = useState([]);
+  const [leaderboardUsers, setLeaderboardUsers] = useState([]);
+  const [mapCenters, setMapCenters] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("week");
 
-  // Preserved & enriched KPIs (clearly labeled demo / account status)
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDashboardData() {
+      try {
+        setLoading(true);
+        const [statsRes, rewardsRes, lbRes, centersRes] = await Promise.allSettled([
+          ecoService.getDashboardStats(),
+          ecoService.getRewards(),
+          ecoService.getLeaderboard(5),
+          fetchCollectionCenters(),
+        ]);
+
+        if (isMounted) {
+          if (statsRes.status === "fulfilled" && statsRes.value) {
+            setStatsData(statsRes.value);
+          }
+          if (rewardsRes.status === "fulfilled" && rewardsRes.value) {
+            setRewardsList(rewardsRes.value);
+          }
+          if (lbRes.status === "fulfilled" && lbRes.value) {
+            setLeaderboardUsers(lbRes.value);
+          }
+          if (centersRes.status === "fulfilled" && centersRes.value) {
+            setMapCenters(centersRes.value);
+          }
+        }
+      } catch (err) {
+        console.error("Dashboard data load error:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadDashboardData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const userPoints = statsData?.kpis?.ecoBalance ?? user?.ecoBalance ?? 0;
+  const verifiedWeight = statsData?.kpis?.totalVerifiedWeightKg ?? 0;
+  const totalDeclarations = statsData?.kpis?.totalDeclarations ?? 0;
+  const approvedCount = statsData?.kpis?.approvedCount ?? 0;
+  const pendingCount = statsData?.kpis?.pendingCount ?? 0;
+  const co2Offset = statsData?.kpis?.co2OffsetKg ?? 0;
+
+  // Real KPIs backed by MongoDB database records
   const kpis = [
     {
-      title: "Total Waste Collected",
-      value: "1,200",
+      title: "Verified Waste Recycled",
+      value: verifiedWeight.toLocaleString(),
       unit: "kg",
       icon: <FaLeaf />,
       color: "#059669",
-      trend: { positive: true, value: "+14.2%" },
-      subtitle: "vs previous month",
+      trend: { positive: true, value: `${approvedCount} approved` },
+      subtitle: `${totalDeclarations} total logged`,
     },
     {
-      title: "Recycling Points",
+      title: "Eco Coins Balance",
       value: userPoints.toLocaleString(),
       unit: "pts",
       icon: <FaRecycle />,
       color: "#10b981",
-      trend: { positive: true, value: "+45 pts" },
-      subtitle: "Tier: Silver Recycler",
+      trend: { positive: true, value: "Active" },
+      subtitle: user?.role ? `Role: ${user.role}` : "Citizen Account",
     },
     {
-      title: "Rewards Earned",
-      value: "320",
-      unit: "$",
-      icon: <FaCoins />,
+      title: "Pending Approval",
+      value: pendingCount.toString(),
+      unit: "items",
+      icon: <FaClock />,
       color: "#eab308",
-      trend: { positive: true, value: "+$40" },
-      subtitle: "Lifetime value saved",
+      trend: { positive: pendingCount === 0, value: pendingCount > 0 ? "Under review" : "Up to date" },
+      subtitle: "Awaiting center verification",
     },
     {
       title: "CO2 Offset",
-      value: "485",
+      value: co2Offset.toLocaleString(),
       unit: "kg",
       icon: <FaTree />,
       color: "#0284c7",
-      trend: { positive: true, value: "+8.5%" },
-      subtitle: "Equivalent to 22 trees",
+      trend: { positive: true, value: `~${Math.round(co2Offset / 20)} trees` },
+      subtitle: "Calculated from verified waste",
     },
   ];
 
-  // Demo Recycling statistics per time range for Recharts
-  const weeklyTrends = [
-    { name: "Mon", plastic: 18, food: 24, clothes: 8 },
-    { name: "Tue", plastic: 25, food: 30, clothes: 12 },
-    { name: "Wed", plastic: 20, food: 18, clothes: 6 },
-    { name: "Thu", plastic: 32, food: 28, clothes: 14 },
-    { name: "Fri", plastic: 28, food: 35, clothes: 20 },
-    { name: "Sat", plastic: 42, food: 48, clothes: 26 },
-    { name: "Sun", plastic: 36, food: 40, clothes: 18 },
-  ];
+  // Dynamic breakdown from real categories
+  const categoryTotals = statsData?.categoryTotals || {};
+  const chartCategories = Object.keys(categoryTotals);
 
-  const monthlyTrends = [
-    { name: "Week 1", plastic: 95, food: 140, clothes: 45 },
-    { name: "Week 2", plastic: 120, food: 165, clothes: 55 },
-    { name: "Week 3", plastic: 110, food: 150, clothes: 40 },
-    { name: "Week 4", plastic: 145, food: 190, clothes: 70 },
-  ];
+  const materialsChartData =
+    chartCategories.length > 0
+      ? chartCategories.map((cat) => ({
+          name: cat,
+          recycled: categoryTotals[cat],
+        }))
+      : [
+          { name: "Plastic", recycled: 0 },
+          { name: "Organic", recycled: 0 },
+          { name: "Textiles", recycled: 0 },
+        ];
 
-  const activeChartData = timeRange === "week" ? weeklyTrends : monthlyTrends;
-
-  // Preserved Map Points
-  const points = [
-    { lat: 36.8065, lng: 10.1815, title: "Valis Recycling Center", type: "plastic", description: "Open 8am-5pm • Accepts PET & HDPE" },
-    { lat: 36.8060, lng: 10.1950, title: "Food Waste Collection", type: "food", description: "Organic only • Daily pickup" },
-    { lat: 36.8070, lng: 10.1880, title: "Clothes Donation Spot", type: "clothes", description: "Drop-off 24/7 • Clean garments" },
-  ];
-
-  // Preserved Rewards
-  const rewards = [
-    {
-      rewardName: "Eco Mug",
-      pointsNeeded: 300,
-      category: "Drinkware",
-      imgSrc: "https://tupperware-eu.com/cdn/shop/files/eco-mug-490-ml-tupperware-1604630.jpg?v=1757630220&width=1365",
-    },
-    {
-      rewardName: "Reusable Bag",
-      pointsNeeded: 500,
-      category: "Lifestyle",
-      imgSrc: "https://environmentaldefence.ca/wp-content/uploads/2023/06/iStock-147041313-scaled.jpg",
-    },
-    {
-      rewardName: "Plant Kit",
-      pointsNeeded: 600,
-      category: "Gardening",
-      imgSrc: "https://getsprigbox.com/cdn/shop/files/Herb_Garden_-_Extra_1_All_plants_growing.jpg?v=1687900929&width=1200",
-    },
-  ];
-
-  // Preserved Leaderboard with current user indicator
-  const users = [
-    { id: 1, name: "Ala B.", points: 1200, isCurrent: false },
-    { id: 2, name: "Ahmes K.", points: 950, isCurrent: false },
-    { id: 3, name: "Pan Xiaoxiaw", points: 870, isCurrent: false },
-    { id: 4, name: "Omar Mechergui", points: userPoints, isCurrent: true },
-  ];
+  // Map collection centers from database
+  const mappedPoints =
+    mapCenters.length > 0
+      ? mapCenters.map((c) => ({
+          lat: c.latitude || 36.8065,
+          lng: c.longitude || 10.1815,
+          title: c.name,
+          type: "plastic",
+          description: `${c.address}, ${c.city}`,
+        }))
+      : [
+          { lat: 36.8065, lng: 10.1815, title: "Valis Center", type: "plastic", description: "Open 8am-5pm" },
+          { lat: 36.8060, lng: 10.1950, title: "Food Waste Hub", type: "food", description: "Organic only" },
+        ];
 
   return (
     <div className="dashboard-content-area">
@@ -140,9 +169,11 @@ export default function Dashboard() {
           <div className="hero-pill">
             <FaLeaf className="hero-pill-icon" /> Environmental Impact Platform
           </div>
-          <h1 className="hero-title">Welcome back, Omar!</h1>
+          <h1 className="hero-title">
+            Welcome back, {user?.fullName || "Recycler"}!
+          </h1>
           <p className="hero-subtitle">
-            Track your recycling activities, monitor footprint reduction, and redeem verified eco rewards.
+            Track your verified recycling activities, monitor carbon reduction, and redeem Eco Coins for sustainable rewards.
           </p>
         </div>
         <div className="hero-actions-col">
@@ -154,14 +185,6 @@ export default function Dashboard() {
           </Link>
         </div>
       </section>
-
-      {/* Demo Notice Banner (Guideline 9 compliance) */}
-      <div className="demo-notice-bar" role="note">
-        <FaInfoCircle className="demo-notice-icon" />
-        <span>
-          <strong>Sample Preview Data:</strong> Metrics and trends shown reflect your current demonstration profile data.
-        </span>
-      </div>
 
       {/* KPI Metric Cards Grid */}
       <section className="dashboard-section" aria-label="Key Performance Indicators">
@@ -184,27 +207,27 @@ export default function Dashboard() {
       {/* Goal Targets / Monthly Progress Section */}
       <section className="dashboard-section" aria-label="Recycling Targets">
         <div className="section-header-compact">
-          <h3 className="section-title-compact">Monthly Sustainability Milestones</h3>
-          <span className="section-subtext">October 2026 Cycle</span>
+          <h3 className="section-title-compact">Recycling Milestones & Progress</h3>
+          <span className="section-subtext">Verified database metrics</span>
         </div>
         <div className="targets-grid">
           <BadgeCardProgress
-            title="Recycled Items Target"
-            value="120"
-            target="160 items"
+            title="Verified Recycled Waste"
+            value={`${verifiedWeight} kg`}
+            target="50 kg target"
             iconType="recycle"
-            progress={75}
+            progress={Math.min((verifiedWeight / 50) * 100, 100)}
           />
           <BadgeCardProgress
-            title="Community Active Days"
-            value="15"
-            target="30 days"
+            title="Approved Declarations"
+            value={approvedCount.toString()}
+            target="10 target"
             iconType="user"
-            progress={50}
+            progress={Math.min((approvedCount / 10) * 100, 100)}
           />
           <BadgeCardProgress
-            title="Eco Reward Points"
-            value={userPoints}
+            title="Eco Coins Balance"
+            value={`${userPoints} pts`}
             target="1,000 pts"
             iconType="leaf"
             progress={Math.min((userPoints / 1000) * 100, 100)}
@@ -217,83 +240,18 @@ export default function Dashboard() {
         <div className="analytics-card">
           <div className="analytics-header">
             <div>
-              <h3 className="card-heading">Recycling Volume & Materials Breakdown</h3>
-              <p className="card-subheading">Weight collected across categories (kg)</p>
-            </div>
-            <div className="time-toggle-group">
-              <button
-                className={`time-toggle-btn ${timeRange === "week" ? "active" : ""}`}
-                onClick={() => setTimeRange("week")}
-              >
-                <FaCalendarAlt className="toggle-icon" /> This Week
-              </button>
-              <button
-                className={`time-toggle-btn ${timeRange === "month" ? "active" : ""}`}
-                onClick={() => setTimeRange("month")}
-              >
-                <FaCalendarAlt className="toggle-icon" /> This Month
-              </button>
+              <h3 className="card-heading">Verified Recycling Materials Breakdown</h3>
+              <p className="card-subheading">Net verified weight across categories (kg)</p>
             </div>
           </div>
 
           <div className="chart-grid">
-            {/* Area Chart: Trend */}
-            <div className="chart-box">
-              <span className="chart-title">Collection Growth Trend</span>
-              <div className="chart-container-inner">
-                <ResponsiveContainer width="100%" height={260}>
-                  <AreaChart data={activeChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="plasticGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0284c7" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
-                      </linearGradient>
-                      <linearGradient id="foodGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#ffffff",
-                        borderColor: "#e2e8f0",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="plastic"
-                      name="Plastic (kg)"
-                      stroke="#0284c7"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#plasticGrad)"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="food"
-                      name="Organic (kg)"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#foodGrad)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
             {/* Bar Chart: Material comparison */}
-            <div className="chart-box">
-              <span className="chart-title">Material Comparison</span>
+            <div className="chart-box" style={{ gridColumn: "span 2" }}>
+              <span className="chart-title">Recycled Weight by Waste Category</span>
               <div className="chart-container-inner">
                 <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={activeChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <BarChart data={materialsChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} />
                     <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} />
@@ -307,9 +265,7 @@ export default function Dashboard() {
                       }}
                     />
                     <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }} />
-                    <Bar dataKey="plastic" name="Plastic" fill="#0284c7" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="food" name="Organic" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="clothes" name="Clothes" fill="#9333ea" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="recycled" name="Verified Weight (kg)" fill="#10b981" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -328,25 +284,28 @@ export default function Dashboard() {
                 <FaTrophy className="header-icon trophy" />
                 <div>
                   <h3 className="card-heading">Top Contributors</h3>
-                  <p className="card-subheading">Regional eco rankings</p>
+                  <p className="card-subheading">Live platform rankings</p>
                 </div>
               </div>
               <span className="live-pill">Live</span>
             </div>
 
             <div className="leaderboard-cards-stack">
-              {users
-                .slice()
-                .sort((a, b) => b.points - a.points)
-                .map((user, idx) => (
+              {leaderboardUsers.length > 0 ? (
+                leaderboardUsers.map((lbUser) => (
                   <LeaderboardCard
-                    key={user.id}
-                    rank={idx + 1}
-                    name={user.name}
-                    points={user.points}
-                    isCurrentUser={user.isCurrent}
+                    key={lbUser.id}
+                    rank={lbUser.rank}
+                    name={lbUser.name}
+                    points={lbUser.points}
+                    isCurrentUser={lbUser.isCurrentUser}
                   />
-                ))}
+                ))
+              ) : (
+                <p style={{ padding: "1rem", color: "#64748b", fontSize: "0.9rem" }}>
+                  No contributors recorded yet.
+                </p>
+              )}
             </div>
 
             <div className="card-bottom-link">
@@ -364,19 +323,14 @@ export default function Dashboard() {
               <div className="card-heading-icon-wrap">
                 <FaMapMarkerAlt className="header-icon map" />
                 <div>
-                  <h3 className="card-heading">Verified Drop-off Centers</h3>
-                  <p className="card-subheading">3 authorized hubs near Tunis</p>
+                  <h3 className="card-heading">Authorized Drop-off Centers</h3>
+                  <p className="card-subheading">{mapCenters.length} verified hubs available</p>
                 </div>
-              </div>
-              <div className="map-legend-pills">
-                <span className="legend-tag tag-plastic">Plastic</span>
-                <span className="legend-tag tag-food">Organic</span>
-                <span className="legend-tag tag-clothes">Textiles</span>
               </div>
             </div>
 
             <div className="dashboard-map-wrapper">
-              <CollectionMap points={points} />
+              <CollectionMap points={mappedPoints} />
             </div>
           </div>
         </section>
@@ -391,7 +345,7 @@ export default function Dashboard() {
               <div>
                 <h3 className="card-heading">Rewards Ready to Redeem</h3>
                 <p className="card-subheading">
-                  Use your <strong>{userPoints} eco points</strong> to claim sustainable goods
+                  Use your <strong>{userPoints} Eco Coins</strong> to claim sustainable goods
                 </p>
               </div>
             </div>
@@ -401,16 +355,22 @@ export default function Dashboard() {
           </div>
 
           <div className="rewards-grid-preview">
-            {rewards.map((r, idx) => (
-              <RewardCard
-                key={idx}
-                rewardName={r.rewardName}
-                pointsNeeded={r.pointsNeeded}
-                imgSrc={r.imgSrc}
-                userPoints={userPoints}
-                category={r.category}
-              />
-            ))}
+            {rewardsList.length > 0 ? (
+              rewardsList.slice(0, 3).map((r) => (
+                <RewardCard
+                  key={r.id}
+                  rewardName={r.title}
+                  pointsNeeded={r.pointsCost}
+                  imgSrc={r.imageUrl}
+                  userPoints={userPoints}
+                  category={r.stock > 0 ? `In Stock (${r.stock})` : "Out of Stock"}
+                />
+              ))
+            ) : (
+              <p style={{ padding: "1.5rem", color: "#64748b" }}>
+                No active rewards in catalog. Check back soon!
+              </p>
+            )}
           </div>
         </div>
       </section>

@@ -22,8 +22,13 @@ function getPrismaClient() {
 }
 
 // Proxied object allowing standard prisma usage while being resilient if not generated yet
+const prismaOverrides = new Map();
+
 const prisma = new Proxy({}, {
   get(target, prop) {
+    if (prismaOverrides.has(prop)) {
+      return prismaOverrides.get(prop);
+    }
     const client = getPrismaClient();
     if (!client) {
       if (prop === '$disconnect') {
@@ -33,6 +38,13 @@ const prisma = new Proxy({}, {
     }
     const value = client[prop];
     return typeof value === 'function' ? value.bind(client) : value;
+  },
+  set(target, prop, value) {
+    prismaOverrides.set(prop, value);
+    return true;
+  },
+  deleteProperty(target, prop) {
+    return prismaOverrides.delete(prop);
   },
 });
 

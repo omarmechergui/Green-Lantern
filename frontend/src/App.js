@@ -21,6 +21,7 @@ import WasteHistory from "./pages/User/WasteHistory/WasteHistory";
 import EcoBadgesPage from "./pages/User/EcoBadgesPage/EcoBadgesPage";
 import Profile from "./pages/User/Profile/Profile";
 import RecycleForm from "./pages/User/RecycleForm/RecycleForm";
+import DynamicLeaderboard from "./pages/User/Leaderboard/Leaderboard";
 
 // Layout
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -76,6 +77,7 @@ function App() {
           <Route path="/eco-badges" element={<EcoBadgesPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/recycle" element={<RecycleForm />} />
+          <Route path="/leaderboard" element={<DynamicLeaderboard />} />
         </Route>
 
         {/* Fallback for unknown routes */}

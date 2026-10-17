@@ -4,6 +4,14 @@ const cookieParser = require('cookie-parser');
 const env = require('./config/env');
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./routes/auth.routes');
+const wasteCategoryRoutes = require('./routes/wasteCategory.routes');
+const collectionCenterRoutes = require('./routes/collectionCenter.routes');
+const declarationRoutes = require('./routes/declaration.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
+const userRoutes = require('./routes/user.routes');
+const rewardRoutes = require('./routes/reward.routes');
+const notificationRoutes = require('./routes/notification.routes');
+const badgeLeaderboardRoutes = require('./routes/badgeLeaderboard.routes');
 const { notFoundHandler, errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
@@ -41,6 +49,14 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/waste-categories', wasteCategoryRoutes);
+app.use('/api/collection-centers', collectionCenterRoutes);
+app.use('/api/waste-declarations', declarationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/rewards', rewardRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api', badgeLeaderboardRoutes);
 
 
 // Centralized 404 & Error Handling

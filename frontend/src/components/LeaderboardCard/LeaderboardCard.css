@@ -3,38 +3,38 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.85rem 1.1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border: 1px solid var(--color-border, #D1FAE5);
+  border-radius: var(--radius-md, 12px);
   background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: var(--color-text-main, #14532D);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(20, 83, 45, 0.04));
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .leaderboard-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px -2px rgba(15, 23, 42, 0.08);
-  border-color: #cbd5e1;
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(20, 83, 45, 0.07));
+  border-color: #86efac;
 }
 
 .leaderboard-card.top-1 {
   border-color: #fde047;
-  background: linear-gradient(135deg, #fefce8 0%, #ffffff 100%);
+  background: #ffffff;
 }
 
 .leaderboard-card.top-2 {
   border-color: #e2e8f0;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: #ffffff;
 }
 
 .leaderboard-card.top-3 {
   border-color: #fed7aa;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+  background: #ffffff;
 }
 
 .leaderboard-card.is-current-user {
-  border-color: #10b981;
-  background: #f0fdf4;
+  border-color: #86efac;
+  background: var(--color-primary-light, #ECFDF5);
 }
 
 .rank-col {
@@ -56,21 +56,25 @@
 .rank-badge.gold {
   background: #fef08a;
   color: #854d0e;
+  border: 1px solid #fde047;
 }
 
 .rank-badge.silver {
   background: #e2e8f0;
-  color: #475569;
+  color: #334155;
+  border: 1px solid #cbd5e1;
 }
 
 .rank-badge.bronze {
   background: #fed7aa;
   color: #9a3412;
+  border: 1px solid #fdba74;
 }
 
 .rank-badge.default {
   background: #f1f5f9;
-  color: #64748b;
+  color: var(--color-text-muted, #475569);
+  border: 1px solid #e2e8f0;
 }
 
 .avatar-col {
@@ -81,14 +85,14 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #e0f2fe;
-  color: #0284c7;
+  background: var(--color-primary-light, #ECFDF5);
+  color: var(--color-primary, #16A34A);
   font-weight: 700;
   font-size: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #bae6fd;
+  border: 1px solid #bbf7d0;
 }
 
 .user-info {
@@ -108,8 +112,8 @@
 .user-name {
   margin: 0;
   font-size: 0.92rem;
-  font-weight: 600;
-  color: #0f172a;
+  font-weight: 700;
+  color: var(--color-text-main, #14532D);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -120,16 +124,16 @@
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  background: #10b981;
+  background: var(--color-primary, #16A34A);
   color: #ffffff;
-  padding: 0.1rem 0.4rem;
-  border-radius: 9999px;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full, 9999px);
   letter-spacing: 0.04em;
 }
 
 .user-meta {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--color-text-muted, #475569);
 }
 
 .points-col {
@@ -141,12 +145,12 @@
 
 .points-number {
   font-size: 1.05rem;
-  font-weight: 700;
-  color: #047857;
+  font-weight: 800;
+  color: var(--color-primary-hover, #15803D);
 }
 
 .points-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--color-text-muted, #475569);
   font-weight: 500;
 }

@@ -1,70 +1,133 @@
 import React, { useState, useEffect } from "react";
 import "./EcoBadgesPage.css";
 import EcoBadges from "../EcoBadges/EcoBadges";
+import { useAuth } from "../../../context/AuthContext";
+import { ecoService } from "../../../services/eco.service";
+import LoadingSkeleton from "../../../components/common/LoadingSkeleton";
+import EmptyState from "../../../components/common/EmptyState";
+import { FaAward, FaCoins, FaCheckCircle } from "react-icons/fa";
 
 export default function EcoBadgesPage() {
-  const [userPoints, setUserPoints] = useState(4200);
+  const { user } = useAuth();
+  const [badgeData, setBadgeData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const levels = [
-    { name: "Green Starter", min: 0, max: 1000, color: "#86efac" },
-    { name: "Eco Explorer", min: 1000, max: 3000, color: "#4ade80" },
-    { name: "Planet Protector", min: 3000, max: 6000, color: "#22c55e" },
-    { name: "Nature Legend", min: 6000, max: 10000, color: "#16a34a" },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    async function loadBadges() {
+      try {
+        setLoading(true);
+        const res = await ecoService.getUserBadges();
+        if (isMounted && res) {
+          setBadgeData(res);
+        }
+      } catch (err) {
+        console.error("Failed to load badges:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
 
-  const badges = [
-    { badgeName: "Food Saver", description: "Recycled 10kg of food waste 🍎", imgSrc: "/badges/food.png" },
-    { badgeName: "Plastic Hero", description: "Recycled 50 bottles ♻️", imgSrc: "/badges/plastic.png" },
-    { badgeName: "Clothes Donor", description: "Donated 5kg of clothes 👕", imgSrc: "/badges/clothes.png" },
-  ];
+    loadBadges();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  // Find current level
-  const currentLevel =
-    levels.find(l => userPoints >= l.min && userPoints < l.max) || levels[levels.length - 1];
+  const userPoints = badgeData?.ecoBalance ?? user?.ecoBalance ?? 0;
+  const currentLevel = badgeData?.currentLevel || {
+    name: "Green Starter",
+    min: 0,
+    max: 500,
+    color: "#16A34A",
+  };
+  const nextLevel = badgeData?.nextLevel;
 
-  const nextLevel = levels.find(l => l.min > currentLevel.min);
   const progressPercent = nextLevel
-    ? ((userPoints - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          ((userPoints - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100
+        )
+      )
     : 100;
+
+  const badges = badgeData?.badges || [];
 
   return (
     <div className="eco-vip-page">
-      <h1 className="vip-title">🌿 Eco Rank System</h1>
-      <p className="vip-desc">
-        You’re currently a <strong style={{ color: currentLevel.color }}>{currentLevel.name}</strong>!
-      </p>
-
-      {/* Progress Bar */}
-      <div className="progress-container">
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${progressPercent}%`,
-              background: currentLevel.color,
-            }}
-          ></div>
+      <div className="vip-header-card">
+        <div className="vip-icon-banner" aria-hidden="true">
+          <FaAward />
         </div>
-        <div className="level-labels">
-          <span>{currentLevel.name}</span>
-          <span>{nextLevel ? nextLevel.name : "Max Level 🚀"}</span>
+        <h1 className="vip-title">Eco Rank & Achievements</h1>
+        <p className="vip-desc">
+          Current Level: <strong className="rank-name-highlight">{currentLevel.name}</strong>
+        </p>
+
+        {/* Progress Bar Container */}
+        <div className="progress-container">
+          <div className="level-labels">
+            <span>{currentLevel.name} ({currentLevel.min} pts)</span>
+            <span>{nextLevel ? `${nextLevel.name} (${nextLevel.min} pts)` : "Maximum Level Reach!"}</span>
+          </div>
+          <div className="progress-bar" role="progressbar" aria-valuenow={Math.round(progressPercent)} aria-valuemin="0" aria-valuemax="100">
+            <div
+              className="progress-fill"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <div className="points-info-row">
+            <span className="points-info">
+              <FaCoins className="coin-mini" aria-hidden="true" /> {userPoints.toLocaleString()} / {nextLevel ? nextLevel.min.toLocaleString() : "10,000"} pts
+            </span>
+            <span className="progress-pct-text">{Math.round(progressPercent)}% to next level</span>
+          </div>
         </div>
       </div>
 
-      {/* Points Info */}
-      <p className="points-info">
-        {userPoints} / {nextLevel ? nextLevel.min : "10000"} pts
-      </p>
+      {loading && <LoadingSkeleton count={4} height="160px" type="card" />}
 
       {/* Badge Section */}
-      <div className="vip-badges-section">
-        <h2>Your Achievements</h2>
-        <div className="vip-badges-grid">
-          {badges.map((badge, index) => (
-            <EcoBadges key={index} {...badge} earned={userPoints > 2000 + index * 1000} />
-          ))}
-        </div>
-      </div>
+      {!loading && (
+        <section className="vip-badges-section" aria-label="Eco badges">
+          <div className="badges-section-header">
+            <h2 className="section-title">Your Recycling Badges</h2>
+            <span className="badges-count-tag">
+              {badges.filter((b) => b.earned).length} of {badges.length} Unlocked
+            </span>
+          </div>
+
+          {badges.length === 0 ? (
+            <EmptyState
+              icon={<FaAward />}
+              title="No badges available"
+              description="Complete waste declarations to unlock badges."
+            />
+          ) : (
+            <div className="vip-badges-grid">
+              {badges.map((badge) => (
+                <EcoBadges
+                  key={badge.id}
+                  badgeName={badge.badgeName}
+                  description={badge.description}
+                  imgSrc={
+                    badge.category === "food"
+                      ? "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=120&auto=format&fit=crop&q=60"
+                      : badge.category === "plastic"
+                      ? "https://images.unsplash.com/photo-1526951521990-620dc14c214b?w=120&auto=format&fit=crop&q=60"
+                      : badge.category === "clothes"
+                      ? "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=120&auto=format&fit=crop&q=60"
+                      : "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=120&auto=format&fit=crop&q=60"
+                  }
+                  earned={badge.earned}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

@@ -1,8 +1,10 @@
 .dashboard-wrapper {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--color-bg-app, #ECFDF5);
+  color: var(--color-text-main, #14532D);
+  position: relative;
+  overflow-x: hidden;
 }
 
 .dashboard-main {
@@ -12,6 +14,19 @@
   padding: 1.5rem 2rem;
   overflow-y: auto;
   gap: 1.5rem;
+  min-width: 0;
+}
+
+.dashboard-page-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  outline: none;
+  width: 100%;
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -19,4 +34,19 @@
     padding: 1rem;
     gap: 1rem;
   }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 83, 45, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 998;
+    animation: fadeInBackdrop 0.2s ease-out;
+  }
+}
+
+@keyframes fadeInBackdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

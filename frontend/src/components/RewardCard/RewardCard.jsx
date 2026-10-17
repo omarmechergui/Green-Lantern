@@ -2,7 +2,16 @@ import React, { useEffect, useState } from "react";
 import "./RewardCard.css";
 import { FaLock, FaCheckCircle, FaCoins } from "react-icons/fa";
 
-export default function RewardCard({ rewardName, pointsNeeded, userPoints, imgSrc, category = "Eco Merch" }) {
+export default function RewardCard({
+  rewardId,
+  rewardName,
+  pointsNeeded,
+  userPoints,
+  imgSrc,
+  category = "Eco Merch",
+  onRedeem,
+  redeeming = false,
+}) {
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
@@ -58,9 +67,14 @@ export default function RewardCard({ rewardName, pointsNeeded, userPoints, imgSr
 
         <button
           className={`reward-action-btn ${unlocked ? "btn-claim" : "btn-locked"}`}
-          disabled={!unlocked}
+          disabled={!unlocked || redeeming}
+          onClick={() => onRedeem && onRedeem(rewardId, pointsNeeded, rewardName)}
         >
-          {unlocked ? "Redeem Now" : "Earn More Points"}
+          {redeeming
+            ? "Processing..."
+            : unlocked
+            ? "Redeem Now"
+            : "Earn More Points"}
         </button>
       </div>
     </div>

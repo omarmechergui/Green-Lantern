@@ -6,13 +6,13 @@ export default function NotificationItem({ message, type, timestamp }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 100); // slight delay for animation
+    const timer = setTimeout(() => setVisible(true), 50);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className={`notification-item ${visible ? "visible" : ""} ${type}`}>
-      <div className="notification-icon">
+    <div className={`notification-item-card ${visible ? "visible" : ""} ${type}`}>
+      <div className="notification-icon-box" aria-hidden="true">
         <FaBell />
       </div>
       <div className="notification-content">

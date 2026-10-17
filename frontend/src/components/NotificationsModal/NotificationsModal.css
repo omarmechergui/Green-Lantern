@@ -5,26 +5,25 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(10px);
+  background: rgba(20, 83, 45, 0.4);
+  backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding-top: 80px;
-  z-index: 9999; /* أهم حاجة باش تكون فوق كل شيء */
+  z-index: 9999;
 }
 
 /* Modal Content */
 .modal-content {
   width: 360px;
   max-height: 500px;
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(25px);
-  border-radius: 1.5rem;
-  border: 1px solid rgba(0,255,136,0.5);
-  box-shadow: 0 0 30px rgba(0,255,136,0.6); /* glow effect */
+  background: #ffffff;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--color-border, #D1FAE5);
+  box-shadow: 0 10px 25px -5px rgba(20, 83, 45, 0.15);
   overflow-y: auto;
-  animation: modal-fade 0.25s ease;
+  animation: modal-fade 0.2s ease;
 }
 
 /* Modal Header */
@@ -32,27 +31,33 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(0,255,136,0.3);
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--color-border, #D1FAE5);
 }
 
 .modal-header h3 {
-  color: #4ade80;
-  text-shadow: 0 0 10px #00ff88; /* glow فوق كل شيء */
+  color: var(--color-text-main, #14532D);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .close-btn {
-  color: #fff;
+  color: var(--color-text-muted, #475569);
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   cursor: pointer;
-  text-shadow: 0 0 10px #00ff88; /* glow فوق كل شيء */
+  transition: color 0.15s ease;
+}
+
+.close-btn:hover {
+  color: #dc2626;
 }
 
 /* Modal Body */
 .modal-body {
-  padding: 0.5rem 1rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -60,22 +65,14 @@
 
 /* Empty state */
 .no-notifications {
-  color: #BCE4C7;
+  color: var(--color-text-muted, #475569);
   text-align: center;
-  text-shadow: 0 0 6px #00ff88;
   font-weight: 500;
+  font-size: 0.88rem;
+  padding: 1.5rem 0;
 }
 
-/* Scrollbar */
-.modal-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-content::-webkit-scrollbar-thumb {
-  background: #4ade80;
-  border-radius: 3px;
-}
-
-.modal-content::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.1);
+@keyframes modal-fade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

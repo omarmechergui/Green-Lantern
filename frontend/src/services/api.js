@@ -63,4 +63,20 @@ export const api = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   },
+
+  patch(endpoint, body, options = {}) {
+    return apiRequest(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  },
+
+  put(endpoint, body, options = {}) {
+    return apiRequest(endpoint, {
+      ...options,
+      method: "PUT",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  },
 };

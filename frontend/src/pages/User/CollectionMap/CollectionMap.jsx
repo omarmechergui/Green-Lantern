@@ -1,10 +1,10 @@
 import React from "react";
+import "./CollectionMap.css";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./CollectionMap.css";
 
-// Create reliable SVG-based DivIcons for waste types without external asset dependency
+// SVG-based DivIcons with brand-aligned harmonious colors
 const createMarkerIcon = (type) => {
   const colors = {
     plastic: { bg: "#0284c7", border: "#38bdf8", icon: "♳" },
@@ -31,7 +31,7 @@ export default function CollectionMap({ points = [] }) {
   const centerPosition = points.length > 0 ? [points[0].lat, points[0].lng] : [36.8065, 10.1815];
 
   return (
-    <div className="collection-map-container">
+    <div className="collection-map-container" role="region" aria-label="Recycling Collection Centers Map">
       <MapContainer
         center={centerPosition}
         zoom={13}
@@ -44,7 +44,7 @@ export default function CollectionMap({ points = [] }) {
         />
         {points.map((point, idx) => (
           <Marker
-            key={idx}
+            key={point.id || idx}
             position={[point.lat, point.lng]}
             icon={createMarkerIcon(point.type)}
           >
